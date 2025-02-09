@@ -1,36 +1,4 @@
-// gerer les images dans une page index.html avec les btn-filtres  
-  function filtrePhotoByCategory(idCategorie) {
-    fetch("http://localhost:5678/api/works", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      const gallery = document.querySelector(".gallery");
-
-      let resultat = "";
-
-      if (idCategorie !== 0) {
-        data = data.filter((photo) => photo.categoryId === idCategorie);
-      }
- 
-      data.forEach((element) => {
-        resultat += `<figure>
-                         <img src="${element.imageUrl}" alt="${element.title}">
-                         <figcaption>${element.title}</figcaption>
-                     </figure>`;
-      });
-
-      gallery.innerHTML = resultat;
-    })
-    .catch((error) => {
-      console.log("Impossible de récupéerer les works depuis le backend");
-    });
-}
-// gerer les images sur le modal 1 
-function getAllPhotos() {
+function fetchPhotos(callback) {
   fetch("http://localhost:5678/api/works", {
     method: "GET",
     headers: {
@@ -39,23 +7,53 @@ function getAllPhotos() {
   })
     .then((response) => response.json())
     .then((data) => {
-      const gallery = document.querySelector(".modifierGallery");
-
-      let resultat = "";
-
-      data.forEach((element) => {
-        resultat += `<div class="gallery-item" id="${element.id}">
-                      <img src="${element.imageUrl}" alt="${element.title}">
-                      <button class="trash-btn"><i class="fa-solid fa-trash-can"></i></button>
-					          </div>`;
-      });
-
-      gallery.innerHTML = resultat;
+      callback(data);
     })
     .catch((error) => {
-      console.log(error);
+      console.error(error);
     });
 }
+
+function renderGallery(data, containerSelector, filterId = null) {
+  const container = document.querySelector(containerSelector);
+  let resultat = "";
+
+  if (filterId !== null) {
+    data = data.filter((photo) => photo.categoryId === filterId || filterId === 0);
+  }
+
+  data.forEach((element) => {
+    if (containerSelector === ".gallery") {
+      resultat += `<figure>
+                     <img src="${element.imageUrl}" alt="${element.title}">
+                     <figcaption>${element.title}</figcaption>
+                   </figure>`;
+    } else if (containerSelector === ".modifierGallery") {
+      resultat += `<div class="gallery-item" id="${element.id}">
+                    <img src="${element.imageUrl}" alt="${element.title}">
+                    <button class="trash-btn"><i class="fa-solid fa-trash-can"></i></button>
+                  </div>`;
+    }
+  });
+
+  container.innerHTML = resultat;
+}
+
+// Fonction pour filtrer les images dans index.html
+function filtrePhotoByCategory(idCategorie) {
+  fetchPhotos((data) => {
+    renderGallery(data, ".gallery", idCategorie);
+  });
+}
+
+// Fonction pour afficher toutes les images dans la modale
+function getAllPhotos() {
+  fetchPhotos((data) => {
+    renderGallery(data, ".modifierGallery");
+  });
+}
+
+// Charger les images pour la modale au chargement de la page
 getAllPhotos();
 
 
