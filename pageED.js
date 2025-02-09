@@ -61,7 +61,7 @@ document.querySelector(".modifierGallery").addEventListener("click", function (e
       .then(() => {
         galleryItem.remove();
         location.reload();
-        alert("L'image a bien été supprimée.");
+        
       })
 
       .catch(error => {
